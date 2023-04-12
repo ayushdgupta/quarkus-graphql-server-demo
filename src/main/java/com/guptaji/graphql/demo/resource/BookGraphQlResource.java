@@ -1,11 +1,10 @@
 package com.guptaji.graphql.demo.resource;
 
 import com.guptaji.graphql.demo.entity.Book;
+import com.guptaji.graphql.demo.entity.StudentGraphQl;
 import com.guptaji.graphql.demo.repository.BookRepo;
-import org.eclipse.microprofile.graphql.Description;
-import org.eclipse.microprofile.graphql.GraphQLApi;
-import org.eclipse.microprofile.graphql.Name;
-import org.eclipse.microprofile.graphql.Query;
+import com.guptaji.graphql.demo.repository.StudentRepo;
+import org.eclipse.microprofile.graphql.*;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -16,6 +15,9 @@ public class BookGraphQlResource {
 
     @Inject
     public BookRepo bookRepo;
+
+    @Inject
+    public StudentRepo studentRepo;
 
     // @Query annotation indicates that we can hit this API or method with 'allBookDetails' name like we define
     // @Path in get or post mapping.
@@ -53,6 +55,7 @@ public class BookGraphQlResource {
     @Query
     @Description("Get the book details on behalf of Book ID")
     public Book getBookDetailsById(@Name("bookId") int id){
+        System.out.println("getBookDetailsById Hit");
         return bookRepo.findById(id);
     }
 
@@ -73,4 +76,48 @@ public class BookGraphQlResource {
           }
         }
      */
+
+    // below method will change the graphql schema so that we can fetch the book details on behalf of some ID
+    // that we can achieved by ABOVE API (getBookDetailsById) along with the student data who are associated with
+    // that book. If we comment below method then the below query will throw an error.
+    /*
+            Graphql query after applying below method is
+            query getBookAndStudentDetails{
+              bookDetailsById(bookId: 3){
+                    id
+                    name
+                    impChapters
+                        fetchBookAndStudentDetailsById{
+                      rollNo
+                      name
+                      standard
+                      booksList {
+                        id
+                      }
+                    }
+                   }
+            }
+
+            Below Query will also work
+            query getBookAndStudentDetails{
+              allBookDetails{
+                                    id
+                                    name
+                                    impChapters
+                        fetchBookAndStudentDetailsById{
+                      rollNo
+                      name
+                      standard
+                      booksList {
+                        id
+                      }
+                    }
+                   }
+            }
+     */
+    // @Source -- Enable List<StudentGraphQl> data to be added to queries that respond with Book
+    public List<StudentGraphQl> fetchBookAndStudentDetailsById(@Source Book book){
+        System.out.println("fetchBookAndStudentDetailsById Hit");
+        return studentRepo.list("SELECT DISTINCT s FROM StudentGraphQl s JOIN s.booksList b WHERE b.id = ?1", book.getId());
+    }
 }
