@@ -120,4 +120,25 @@ public class BookGraphQlResource {
         System.out.println("fetchBookAndStudentDetailsById Hit");
         return studentRepo.list("SELECT DISTINCT s FROM StudentGraphQl s JOIN s.booksList b WHERE b.id = ?1", book.getId());
     }
+
+    /*
+        On this URL http://localhost:8086/graphql/schema.graphql we can see the GraphQl Schema for everything
+        so when we added @Source in above method then Book schema changed to
+        type Book {
+          fetchBookAndStudentDetailsById: [StudentGraphQl]
+          id: Int!
+          impChapters: [Int]
+          name: String
+        }
+
+        but when we remove @Source then it become
+        type Book {
+          id: Int!
+          impChapters: [Int]
+          name: String
+        }
+
+        that's why whenever we are executing any graphql query related to Book, we are able to fetch the data
+        with the use of that method also.
+     */
 }
