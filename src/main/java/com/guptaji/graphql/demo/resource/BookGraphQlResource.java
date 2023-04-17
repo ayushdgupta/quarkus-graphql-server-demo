@@ -2,11 +2,13 @@ package com.guptaji.graphql.demo.resource;
 
 import com.guptaji.graphql.demo.entity.Book;
 import com.guptaji.graphql.demo.entity.StudentGraphQl;
+import com.guptaji.graphql.demo.exceptions.SomeBusinessException;
 import com.guptaji.graphql.demo.repository.BookRepo;
 import com.guptaji.graphql.demo.repository.StudentRepo;
 import org.eclipse.microprofile.graphql.*;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 import java.util.List;
 
 // below annotation will indicate that this endpoint will be an graphql endpoint.
@@ -141,4 +143,17 @@ public class BookGraphQlResource {
         that's why whenever we are executing any graphql query related to Book, we are able to fetch the data
         with the use of that method also.
      */
+
+    // Now let's see how to add a book with the help of @Mutation
+    @Mutation
+    @Transactional
+    public Book createBook(Book book){
+        bookRepo.persist(book);
+        if (bookRepo.isPersistent(book)){
+            return book;
+        } else {
+            // business exception not working
+            throw new SomeBusinessException("Nikalle yha se nhi add hua member");
+        }
+    }
 }
